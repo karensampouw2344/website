@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Zodiac Interactive Playground (Ringkas)</title>
+<style>
+:root {
+  --bg: #6a0dad;
+  --card: #f8f4ff;
+  --accent: #8e44ad;
+  --muted: #6e5494;
+  --glass: rgba(255,255,255,0.3);
+  --text: #1b003d;
+  --shadow: 0 6px 20px rgba(0,0,0,0.2);
+  --transition-speed: 0.4s;
+}
+* { box-sizing:border-box; font-family:Inter, sans-serif; }
+html, body { height:100%; margin:0; background:linear-gradient(180deg,#7f3fbf 0%, #6a0dad 70%); color:var(--text); display:flex; align-items:center; justify-content:center; padding:20px; }
+.wrap { width:100%; max-width:960px; }
+header { text-align:center; margin-bottom:24px; }
+h1 { font-size:28px; margin:0; color:#fff; text-shadow:0 2px 6px rgba(0,0,0,0.3); }
+p.lead { margin:4px 0 0; color:#e0d6f5; font-size:14px; }
+.grid { display:grid; grid-template-columns:360px 1fr; gap:24px; }
+.card { background:var(--card); border-radius:16px; padding:20px; box-shadow:var(--shadow); color:var(--text); transition:transform 0.3s ease, box-shadow 0.3s ease; }
+.card:hover { transform:translateY(-3px); box-shadow:0 10px 28px rgba(0,0,0,0.25); }
+.controls label { font-size:14px; color:var(--muted); display:block; margin-bottom:6px; }
+select, button { width:100%; padding:10px; border-radius:10px; border:1px solid rgba(0,0,0,0.1); background:transparent; color:inherit; font-size:14px; }
+button { cursor:pointer; background:var(--accent); color:#fff; font-weight:700; border:none; transition:background 0.3s ease; }
+button:hover { background:#6f2fa6; }
+.sign-card { display:flex; flex-direction:column; gap:10px; opacity:1; transition:opacity var(--transition-speed) ease; }
+.sign-card.hide { opacity:0; }
+.big-sign { font-size:48px; font-weight:800; color:var(--accent); text-shadow:0 2px 6px rgba(0,0,0,0.2); }
+.meta { display:flex; gap:10px; flex-wrap:wrap; }
+.chip { background:var(--glass); padding:6px 12px; border-radius:999px; font-size:13px; color:var(--muted); }
+.traits { margin-top:8px; color:#4b1f70; font-weight:500; }
+.grid-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:14px; }
+.stat { background:rgba(255,255,255,0.35); padding:12px; border-radius:12px; text-align:center; font-weight:500; }
+.stat strong { display:block; font-size:18px; color:var(--accent); }
+.compat { margin-top:14px; }
+.compat-list { display:flex; gap:10px; flex-wrap:wrap; }
+.compat-item { background:rgba(255,255,255,0.35); padding:8px 12px; border-radius:10px; cursor:pointer; font-size:13px; transition:transform 0.2s ease; }
+.compat-item:hover { transform:scale(1.05); }
+footer { margin-top:16px; color:var(--muted); font-size:13px; text-align:center; }
+@media(max-width:900px){.grid{grid-template-columns:1fr;}.card{padding:16px;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Zodiac Interactive <span class="sparkle">✨</span></h1>
+    <p class="lead">Versi ringkas tapi tetap interaktif dengan animasi fade.</p>
+  </header>
+  <div class="grid">
+    <div class="card controls">
+      <label for="signSelect">Pilih Zodiak</label>
+      <select id="signSelect" aria-label="Pilih zodiak"><option value="" disabled selected>-- Pilih sign --</option></select>
+      <div style="height:8px"></div>
+      <button id="btnReveal" aria-label="Tampilkan zodiak">Tampilkan</button>
+    </div>
+    <div class="card">
+      <div class="sign-card" id="signCard">
+        <div class="big-sign" id="signName">—</div>
+        <div class="meta"><span class="chip" id="dateRange">—</span><span class="chip" id="element">—</span></div>
+        <div class="traits" id="traits">—</div>
+        <div class="grid-stats">
+          <div class="stat"><small>Keberuntungan</small><strong id="luck">—</strong></div>
+          <div class="stat"><small>Energi</small><strong id="energy">—</strong></div>
+          <div class="stat"><small>Mood</small><strong id="mood">—</strong></div>
+        </div>
+        <div class="compat">
+          <div class="compat-list" id="compatList"></div>
+        </div>
+        <div class="daily" id="dailyText">—</div>
+      </div>
+      <footer>Untuk hiburan saja 😉</footer>
+    </div>
+  </div>
+</div>
+<script>
+const signs = [
+  {name:"Aries",dateRange:"21 Mar - 19 Apr",element:"Fire",traits:"Berani, Enerjik",luck:"7",energy:"8",mood:"6",compat:["Leo","Sagittarius"]},
+  {name:"Taurus",dateRange:"20 Apr - 20 Mei",element:"Earth",traits:"Sabar, Konsisten",luck:"8",energy:"6",mood:"7",compat:["Virgo","Capricorn"]},
+  {name:"Gemini",dateRange:"21 Mei - 20 Jun",element:"Air",traits:"Cerdas, Adaptif",luck:"6",energy:"7",mood:"8",compat:["Libra","Aquarius"]},
+  {name:"Cancer",dateRange:"21 Jun - 22 Jul",element:"Water",traits:"Emosional, Peduli",luck:"7",energy:"6",mood:"7",compat:["Scorpio","Pisces"]},
+  {name:"Leo",dateRange:"23 Jul - 22 Agu",element:"Fire",traits:"Pemimpin, Percaya Diri",luck:"8",energy:"9",mood:"7",compat:["Aries","Sagittarius"]},
+  {name:"Virgo",dateRange:"23 Agu - 22 Sep",element:"Earth",traits:"Analitis, Perfeksionis",luck:"8",energy:"7",mood:"6",compat:["Taurus","Capricorn"]},
+  {name:"Libra",dateRange:"23 Sep - 22 Okt",element:"Air",traits:"Ramah, Diplomatis",luck:"7",energy:"6",mood:"8",compat:["Gemini","Aquarius"]},
+  {name:"Scorpio",dateRange:"23 Okt - 21 Nov",element:"Water",traits:"Intens, Misterius",luck:"6",energy:"7",mood:"6",compat:["Cancer","Pisces"]},
+  {name:"Sagittarius",dateRange:"22 Nov - 21 Des",element:"Fire",traits:"Petualang, Optimis",luck:"8",energy:"9",mood:"7",compat:["Aries","Leo"]},
+  {name:"Capricorn",dateRange:"22 Des - 19 Jan",element:"Earth",traits:"Disiplin, Ambisius",luck:"7",energy:"6",mood:"7",compat:["Taurus","Virgo"]},
+  {name:"Aquarius",dateRange:"20 Jan - 18 Feb",element:"Air",traits:"Inovatif, Independen",luck:"6",energy:"7",mood:"8",compat:["Gemini","Libra"]},
+  {name:"Pisces",dateRange:"19 Feb - 20 Mar",element:"Water",traits:"Empati, Kreatif",luck:"7",energy:"6",mood:"7",compat:["Cancer","Scorpio"]}
+];
+const signSelect = document.getElementById('signSelect');
+const btnReveal = document.getElementById('btnReveal');
+signs.forEach(s=>{const o=document.createElement('option');o.value=s.name;o.textContent=s.name;signSelect.appendChild(o);});
+const signCard = document.getElementById('signCard');
+
+// allow Enter on the select to trigger the reveal
+signSelect.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') btnReveal.click();
+});
+
+btnReveal.addEventListener('click', ()=>{
+  const val = signSelect.value;
+  const s = signs.find(z=>z.name===val);
+  if(s){
+    signCard.classList.add('hide');
+    setTimeout(()=>{
+      document.getElementById('signName').textContent=s.name;
+      document.getElementById('dateRange').textContent=s.dateRange;
+      document.getElementById('element').textContent=s.element;
+      document.getElementById('traits').textContent=s.traits;
+      document.getElementById('luck').textContent=s.luck;
+      document.getElementById('energy').textContent=s.energy;
+      document.getElementById('mood').textContent=s.mood;
+      const compatList = document.getElementById('compatList');
+      compatList.innerHTML='';
+      // make compat items keyboard-focusable (buttons) and clicking them reveals that sign
+      s.compat.forEach(c=>{
+        const d=document.createElement('button');
+        d.type = 'button';
+        d.className='compat-item';
+        d.textContent=c;
+        d.setAttribute('aria-label', `Kompatibel dengan ${c}`);
+        d.addEventListener('click', ()=>{
+          // select the compat sign and reveal it
+          signSelect.value = c;
+          btnReveal.click();
+        });
+        compatList.appendChild(d);
+      });
+      document.getElementById('dailyText').textContent = `Hari ini ${s.name} akan menjalani harinya dengan energi ${s.energy}/10 dan mood ${s.mood}/10.`;
+      signCard.classList.remove('hide');
+    },400);
+  }
+});
+</script>
+</body>
+</html>
